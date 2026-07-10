@@ -11,14 +11,14 @@
   <!-- LOGIN SCREEN -->
   <div id="login-screen" class="login-screen">
     <div class="login-card">
-      <h1>Client Book</h1>
+      <h1>🗂️ Client Book</h1>
       <p class="subtitle">Sign in to manage your clients</p>
       <form id="login-form">
         <label>Email</label>
         <input type="email" id="login-email" required autocomplete="username" />
         <label>Password</label>
         <input type="password" id="login-password" required autocomplete="current-password" />
-        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        <button type="submit" class="btn btn-primary btn-block">🔑 Sign In</button>
         <p id="login-error" class="error-text"></p>
       </form>
     </div>
@@ -43,7 +43,7 @@
   <!-- APP SHELL -->
   <div id="app" class="app hidden">
     <nav class="sidebar">
-      <div class="brand">Client Book</div>
+      <div class="brand">🗂️ Client Book</div>
       <a href="#/dashboard" class="nav-link" data-route="dashboard">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
         Dashboard
@@ -66,7 +66,7 @@
       </a>
       <div class="sidebar-spacer"></div>
       <div class="user-email" id="user-email"></div>
-      <button id="logout-btn" class="btn btn-ghost btn-block">Sign Out</button>
+      <button id="logout-btn" class="btn btn-ghost btn-block">🚪 Sign Out</button>
     </nav>
     <main class="content" id="content">
       <!-- Views render here -->
@@ -79,33 +79,33 @@
   <!-- TEMPLATES -->
   <template id="tpl-dashboard">
     <div class="view-header">
-      <h2>Dashboard</h2>
+      <h2>📊 Dashboard</h2>
       <div class="today-label" id="today-label"></div>
     </div>
     <div class="dash-grid">
       <section class="card">
-        <h3>Follow-ups Due (today &amp; overdue)</h3>
+        <h3>⏰ Follow-ups Due (today &amp; overdue)</h3>
         <div id="dash-followups" class="list"></div>
       </section>
       <section class="card">
-        <h3>Renewals — Next 90 Days</h3>
+        <h3>📅 Renewals — Next 90 Days</h3>
         <div id="dash-renewals" class="list"></div>
       </section>
       <section class="card">
-        <h3>Tasks Due (today &amp; overdue)</h3>
+        <h3>✅ Tasks Due (today &amp; overdue)</h3>
         <div id="dash-tasks" class="list"></div>
       </section>
     </div>
     <section class="card">
-      <h3>Quick Stats</h3>
+      <h3>📈 Quick Stats</h3>
       <div class="stats-row" id="dash-stats"></div>
     </section>
   </template>
 
   <template id="tpl-clients">
     <div class="view-header">
-      <h2>Clients</h2>
-      <a href="#/clients/new" class="btn btn-primary">+ Add Client</a>
+      <h2>👥 Clients</h2>
+      <a href="#/clients/new" class="btn btn-primary">➕ Add Client</a>
     </div>
     <div class="toolbar">
       <input type="text" id="client-search" placeholder="Search by name, phone, email..." />
@@ -155,7 +155,7 @@
 
   <template id="tpl-client-form">
     <div class="view-header">
-      <h2 id="client-form-title">Add Client</h2>
+      <h2 id="client-form-title">🧾 Add Client</h2>
     </div>
     <form id="client-form" class="form-card">
       <div class="form-grid">
@@ -198,9 +198,9 @@
         <textarea id="f-notes" rows="3" placeholder="e.g. teen driver added 2027, considering umbrella policy"></textarea>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Save Client</button>
+        <button type="submit" class="btn btn-primary">💾 Save Client</button>
         <a href="#/clients" class="btn btn-ghost">Cancel</a>
-        <button type="button" id="delete-client-btn" class="btn btn-danger hidden">Delete Client</button>
+        <button type="button" id="delete-client-btn" class="btn btn-danger hidden">🗑️ Delete Client</button>
       </div>
     </form>
   </template>
@@ -212,30 +212,30 @@
         <span class="badge" id="detail-status"></span>
       </div>
       <div>
-        <a href="#" id="edit-client-link" class="btn btn-ghost">Edit</a>
+        <a href="#" id="edit-client-link" class="btn btn-ghost">✏️ Edit</a>
       </div>
     </div>
 
     <div class="detail-grid">
       <section class="card">
-        <h3>Client Info</h3>
+        <h3>ℹ️ Client Info</h3>
         <dl class="info-list" id="detail-info"></dl>
       </section>
 
       <section class="card">
-        <h3>Log an Interaction</h3>
+        <h3>📝 Log an Interaction</h3>
         <form id="interaction-form" class="form-card">
           <div class="form-grid">
             <div class="field">
               <label>Type</label>
               <select id="i-type">
-                <option>Call</option>
-                <option>Quote</option>
-                <option>Email</option>
-                <option>Meeting</option>
-                <option>Note</option>
-                <option>Bind</option>
-                <option>DASH Report</option>
+                <option value="Call">📞 Call</option>
+                <option value="Quote">💬 Quote</option>
+                <option value="Email">✉️ Email</option>
+                <option value="Meeting">🤝 Meeting</option>
+                <option value="Note">📝 Note</option>
+                <option value="Bind">🔒 Bind</option>
+                <option value="DASH Report">🪪 DASH Report</option>
               </select>
             </div>
             <div class="field">
@@ -250,14 +250,14 @@
               <label>Line of Business</label>
               <select id="i-quoteLOB">
                 <option value="">— Select —</option>
-                <option>Auto</option>
-                <option>Home</option>
-                <option>Auto + Home Bundle</option>
-                <option>Tenant</option>
-                <option>Condo</option>
-                <option>Business/Commercial</option>
-                <option>Umbrella</option>
-                <option>Other</option>
+                <option value="Auto">🚗 Auto</option>
+                <option value="Home">🏠 Home</option>
+                <option value="Auto + Home Bundle">🚗🏠 Auto + Home Bundle</option>
+                <option value="Tenant">🔑 Tenant</option>
+                <option value="Condo">🏢 Condo</option>
+                <option value="Business/Commercial">🏬 Business/Commercial</option>
+                <option value="Umbrella">☂️ Umbrella</option>
+                <option value="Other">📋 Other</option>
               </select>
             </div>
             <div class="field" id="i-premium-wrap">
@@ -282,35 +282,35 @@
             <textarea id="i-summary" rows="2" required placeholder="What happened / what was discussed"></textarea>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Add to Timeline</button>
+            <button type="submit" class="btn btn-primary">➕ Add to Timeline</button>
           </div>
         </form>
       </section>
     </div>
 
     <section class="card">
-      <h3>Documents</h3>
+      <h3>📎 Documents</h3>
       <form id="document-form" class="doc-upload-row">
         <select id="doc-category"></select>
         <input type="file" id="doc-file" accept="image/*,.pdf" required />
-        <button type="submit" class="btn btn-primary">Upload</button>
+        <button type="submit" class="btn btn-primary">⬆️ Upload</button>
       </form>
       <div id="doc-upload-status" class="upload-status"></div>
       <div id="documents-grid" class="documents-grid"></div>
     </section>
 
     <section class="card">
-      <h3>Timeline</h3>
+      <h3>🕒 Timeline</h3>
       <div id="detail-timeline" class="timeline"></div>
     </section>
   </template>
 
   <template id="tpl-tasks">
     <div class="view-header">
-      <h2>Tasks</h2>
+      <h2>✅ Tasks</h2>
     </div>
     <section class="card">
-      <h3>Add a Task</h3>
+      <h3>➕ Add a Task</h3>
       <form id="task-form" class="form-card">
         <div class="form-grid">
           <div class="field">
@@ -333,30 +333,30 @@
           <textarea id="t-notes" rows="2"></textarea>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Add Task</button>
+          <button type="submit" class="btn btn-primary">➕ Add Task</button>
         </div>
       </form>
     </section>
     <section class="card">
-      <h3>Open Tasks</h3>
+      <h3>🟢 Open Tasks</h3>
       <div id="tasks-open-list" class="list" style="max-height:none;"></div>
     </section>
     <section class="card">
-      <h3>Completed</h3>
+      <h3>☑️ Completed</h3>
       <div id="tasks-done-list" class="list" style="max-height:none;"></div>
     </section>
   </template>
 
   <template id="tpl-commissions">
     <div class="view-header">
-      <h2>Commissions</h2>
+      <h2>💰 Commissions</h2>
     </div>
     <section class="card">
-      <h3>Summary</h3>
+      <h3>📈 Summary</h3>
       <div class="stats-row" id="comm-stats"></div>
     </section>
     <section class="card">
-      <h3>Bound Policies</h3>
+      <h3>🔒 Bound Policies</h3>
       <div class="table-wrap">
         <table class="data-table">
           <thead>

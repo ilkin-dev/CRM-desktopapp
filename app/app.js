@@ -121,6 +121,50 @@ function statusClass(status) {
   return "status-" + String(status).replace(/[^a-zA-Z0-9]+/g, "-");
 }
 
+const STATUS_EMOJI = {
+  "New Lead": "🌱",
+  "Quoted": "💬",
+  "Bound": "🔒",
+  "Active Client": "✅",
+  "Renewal Due": "⏰",
+  "Referral Source": "🤝",
+  "Lapsed/Lost": "⚪",
+};
+function statusEmoji(status) { return STATUS_EMOJI[status] || "•"; }
+
+const LOB_EMOJI = {
+  "Auto": "🚗",
+  "Home": "🏠",
+  "Auto + Home Bundle": "🚗🏠",
+  "Tenant": "🔑",
+  "Condo": "🏢",
+  "Business/Commercial": "🏬",
+  "Umbrella": "☂️",
+  "Other": "📋",
+};
+function lobEmoji(lob) { return LOB_EMOJI[lob] || "📄"; }
+
+const DOC_EMOJI = {
+  "Driver's License": "🪪",
+  "Vehicle Photo": "🚗",
+  "Bill of Sale": "🧾",
+  "Finance Application": "💳",
+  "Proof of Insurance": "📄",
+  "Other": "📁",
+};
+function docEmoji(cat) { return DOC_EMOJI[cat] || "📁"; }
+
+const TYPE_EMOJI = {
+  "Call": "📞",
+  "Quote": "💬",
+  "Email": "✉️",
+  "Meeting": "🤝",
+  "Note": "📝",
+  "Bind": "🔒",
+  "DASH Report": "🪪",
+};
+function typeEmoji(type) { return TYPE_EMOJI[type] || "•"; }
+
 // ---------------- Dashboard ----------------
 
 async function renderDashboard() {
@@ -138,7 +182,7 @@ async function renderDashboard() {
 
   const fuWrap = document.getElementById("dash-followups");
   if (followUps.length === 0) {
-    fuWrap.innerHTML = '<div class="empty-note">Nothing due. You\'re caught up.</div>';
+    fuWrap.innerHTML = '<div class="empty-note">🎉 Nothing due. You\'re caught up.</div>';
   } else {
     fuWrap.innerHTML = "";
     followUps.forEach(i => {
@@ -160,7 +204,7 @@ async function renderDashboard() {
 
   const rnWrap = document.getElementById("dash-renewals");
   if (renewals.length === 0) {
-    rnWrap.innerHTML = '<div class="empty-note">No renewals in the next 90 days.</div>';
+    rnWrap.innerHTML = '<div class="empty-note">📅 No renewals in the next 90 days.</div>';
   } else {
     rnWrap.innerHTML = "";
     renewals.forEach(c => {
@@ -182,7 +226,7 @@ async function renderDashboard() {
     .sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
   const taskWrap = document.getElementById("dash-tasks");
   if (dueTasks.length === 0) {
-    taskWrap.innerHTML = '<div class="empty-note">No tasks due.</div>';
+    taskWrap.innerHTML = '<div class="empty-note">🎉 No tasks due.</div>';
   } else {
     taskWrap.innerHTML = "";
     dueTasks.forEach(t => {
@@ -201,10 +245,10 @@ async function renderDashboard() {
   const active = clients.filter(c => c.status === "Active Client").length;
   const leads = clients.filter(c => ["New Lead", "Quoted"].includes(c.status)).length;
   document.getElementById("dash-stats").innerHTML = `
-    <div class="stat"><div class="num">${clients.length}</div><div class="label">Total Clients</div></div>
-    <div class="stat"><div class="num">${active}</div><div class="label">Active</div></div>
-    <div class="stat"><div class="num">${leads}</div><div class="label">Leads in Pipeline</div></div>
-    <div class="stat"><div class="num">${followUps.length}</div><div class="label">Follow-ups Due</div></div>
+    <div class="stat"><div class="num">${clients.length}</div><div class="label">👥 Total Clients</div></div>
+    <div class="stat"><div class="num">${active}</div><div class="label">✅ Active</div></div>
+    <div class="stat"><div class="num">${leads}</div><div class="label">🌱 Leads in Pipeline</div></div>
+    <div class="stat"><div class="num">${followUps.length}</div><div class="label">⏰ Follow-ups Due</div></div>
   `;
 }
 
@@ -218,7 +262,7 @@ async function renderClientsList() {
   STATUSES.forEach(s => {
     const opt = document.createElement("option");
     opt.value = s;
-    opt.textContent = s;
+    opt.textContent = statusEmoji(s) + " " + s;
     statusFilter.appendChild(opt);
   });
 
@@ -254,7 +298,7 @@ async function renderClientsList() {
       tr.className = "clickable";
       tr.innerHTML = `
         <td>${escapeHtml(c.fullName || "")}</td>
-        <td><span class="badge ${statusClass(c.status)}">${escapeHtml(c.status || "")}</span></td>
+        <td><span class="badge ${statusClass(c.status)}">${statusEmoji(c.status)} ${escapeHtml(c.status || "")}</span></td>
         <td>${escapeHtml(c.lineOfBusiness || "—")}</td>
         <td>${fmtDate(c.renewalDate)}</td>
         <td>${escapeHtml(c.phone || "—")}</td>
@@ -280,7 +324,7 @@ async function renderClientForm(clientId) {
   STATUSES.forEach(s => {
     const opt = document.createElement("option");
     opt.value = s;
-    opt.textContent = s;
+    opt.textContent = statusEmoji(s) + " " + s;
     statusSelect.appendChild(opt);
   });
 
@@ -298,7 +342,7 @@ async function renderClientForm(clientId) {
   let existingLob = [];
   if (clientId) {
     existing = await getClient(clientId);
-    document.getElementById("client-form-title").textContent = "Edit Client";
+    document.getElementById("client-form-title").textContent = "✏️ Edit Client";
     document.getElementById("f-fullName").value = existing.fullName || "";
     document.getElementById("f-status").value = existing.status || "New Lead";
     phoneInput.value = existing.phone || "";
@@ -381,7 +425,7 @@ async function renderClientDetail(clientId) {
 
   document.getElementById("detail-name").textContent = client.fullName;
   const statusEl = document.getElementById("detail-status");
-  statusEl.textContent = client.status;
+  statusEl.textContent = statusEmoji(client.status) + " " + client.status;
   statusEl.className = "badge " + statusClass(client.status);
   document.getElementById("edit-client-link").href = `#/clients/${clientId}/edit`;
 
@@ -463,7 +507,7 @@ async function renderClientDetail(clientId) {
   DOCUMENT_CATEGORIES.forEach(cat => {
     const opt = document.createElement("option");
     opt.value = cat;
-    opt.textContent = cat;
+    opt.textContent = docEmoji(cat) + " " + cat;
     docCategorySelect.appendChild(opt);
   });
 
@@ -500,7 +544,7 @@ async function renderClientDetail(clientId) {
   const interactions = await listInteractionsForClient(clientId);
   const timeline = document.getElementById("detail-timeline");
   if (interactions.length === 0) {
-    timeline.innerHTML = '<div class="empty-note">No interactions logged yet.</div>';
+    timeline.innerHTML = '<div class="empty-note">🕒 No interactions logged yet.</div>';
   } else {
     timeline.innerHTML = "";
     interactions.forEach(i => {
@@ -515,7 +559,7 @@ async function renderClientDetail(clientId) {
       }
       const followUp = i.followUpDate ? ` <span class="tag">Follow-up: ${fmtDate(i.followUpDate)}</span>` : "";
       div.innerHTML = `
-        <div class="meta"><span class="type-tag">${escapeHtml(i.type)}</span>${fmtDate(i.date)}${followUp}</div>
+        <div class="meta"><span class="type-tag">${typeEmoji(i.type)} ${escapeHtml(i.type)}</span>${fmtDate(i.date)}${followUp}</div>
         <div class="summary">${escapeHtml(i.summary)}${extra ? "<br><em>" + escapeHtml(extra) + "</em>" : ""}</div>
       `;
       timeline.appendChild(div);
@@ -532,7 +576,7 @@ async function renderDocuments(clientId, gridEl) {
     return;
   }
   if (docs.length === 0) {
-    gridEl.innerHTML = '<div class="empty-note">No documents uploaded yet.</div>';
+    gridEl.innerHTML = '<div class="empty-note">📎 No documents uploaded yet.</div>';
     return;
   }
   gridEl.innerHTML = "";
@@ -544,12 +588,12 @@ async function renderDocuments(clientId, gridEl) {
         ${isImageType(doc.contentType) ? `<img src="${doc.url}" alt="${escapeHtml(doc.name)}" />` : FILE_ICON_SVG}
       </div>
       <div class="doc-meta">
-        <div class="doc-category">${escapeHtml(doc.category)}</div>
+        <div class="doc-category">${docEmoji(doc.category)} ${escapeHtml(doc.category)}</div>
         <div class="doc-name" title="${escapeHtml(doc.name)}">${escapeHtml(doc.name)}</div>
       </div>
       <div class="doc-actions">
-        <a href="${doc.url}" target="_blank" rel="noopener">View</a>
-        <button type="button" class="doc-delete">Delete</button>
+        <a href="${doc.url}" target="_blank" rel="noopener">👁️ View</a>
+        <button type="button" class="doc-delete">🗑️ Delete</button>
       </div>
     `;
     card.querySelector(".doc-delete").addEventListener("click", async () => {
@@ -610,7 +654,7 @@ async function renderTasks() {
       <span class="task-title ${t.done ? "done" : ""}">${escapeHtml(t.title)}</span>
       ${c ? `<span class="task-client">${escapeHtml(c.fullName)}</span>` : ""}
       <span class="task-due" style="${overdue ? "color:#c0392b;font-weight:bold;" : ""}">${t.dueDate ? fmtDate(t.dueDate) : ""}</span>
-      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">Delete</button>
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;">🗑️ Delete</button>
     `;
     row.querySelector('input[type="checkbox"]').addEventListener("change", async (ev) => {
       await updateTask(t.id, { done: ev.target.checked });
@@ -632,7 +676,7 @@ async function renderTasks() {
   const done = tasks.filter(t => t.done);
 
   openList.innerHTML = "";
-  if (open.length === 0) openList.innerHTML = '<div class="empty-note">No open tasks.</div>';
+  if (open.length === 0) openList.innerHTML = '<div class="empty-note">🎉 No open tasks.</div>';
   else open.forEach(t => openList.appendChild(taskRow(t)));
 
   doneList.innerHTML = "";
@@ -660,10 +704,10 @@ async function renderCommissions() {
     .reduce((sum, i) => sum + (i.commissionAmount || 0), 0);
 
   document.getElementById("comm-stats").innerHTML = `
-    <div class="stat"><div class="num">${binds.length}</div><div class="label">Policies Bound</div></div>
-    <div class="stat"><div class="num">$${totalPremium.toLocaleString()}</div><div class="label">Total Premium</div></div>
-    <div class="stat"><div class="num">$${totalCommission.toLocaleString()}</div><div class="label">Total Commission</div></div>
-    <div class="stat"><div class="num">$${monthCommission.toLocaleString()}</div><div class="label">This Month</div></div>
+    <div class="stat"><div class="num">${binds.length}</div><div class="label">🔒 Policies Bound</div></div>
+    <div class="stat"><div class="num">$${totalPremium.toLocaleString()}</div><div class="label">💵 Total Premium</div></div>
+    <div class="stat"><div class="num">$${totalCommission.toLocaleString()}</div><div class="label">💰 Total Commission</div></div>
+    <div class="stat"><div class="num">$${monthCommission.toLocaleString()}</div><div class="label">📅 This Month</div></div>
   `;
 
   const tbody = document.getElementById("comm-tbody");
@@ -698,10 +742,11 @@ function escapeHtml(str) {
 }
 
 function toast(message, type) {
+  const prefix = type === "success" ? "✅ " : type === "error" ? "⚠️ " : "🔔 ";
   const container = document.getElementById("toast-container");
   const el = document.createElement("div");
   el.className = "toast" + (type ? " " + type : "");
-  el.textContent = message;
+  el.textContent = prefix + message;
   container.appendChild(el);
   setTimeout(() => {
     el.classList.add("fade-out");
@@ -769,7 +814,7 @@ function buildLobCheckboxes(container, selected) {
     if (cb.checked) label.classList.add("checked");
     cb.addEventListener("change", () => label.classList.toggle("checked", cb.checked));
     label.appendChild(cb);
-    label.appendChild(document.createTextNode(" " + opt));
+    label.appendChild(document.createTextNode(" " + lobEmoji(opt) + " " + opt));
     container.appendChild(label);
   });
 }
