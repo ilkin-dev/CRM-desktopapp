@@ -1,0 +1,154 @@
+:root {
+  --navy: #1f3864;
+  --accent: #2e75b6;
+  --accent-light: #d9e7f5;
+  --grey: #666666;
+  --border: #e2e6ea;
+  --bg: #f5f7fa;
+  --danger: #c0392b;
+  --success: #1e8449;
+  --warn: #b9770e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: #222;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- Login ---------- */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--navy), var(--accent));
+}
+.login-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  width: 340px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+}
+.login-card h1 { margin: 0 0 4px; color: var(--navy); font-size: 24px; }
+.login-card .subtitle { margin: 0 0 20px; color: var(--grey); font-size: 14px; }
+.login-card label { display: block; font-size: 13px; margin: 12px 0 4px; color: #444; }
+.login-card input {
+  width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;
+}
+.error-text { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 16px; }
+
+/* ---------- App shell ---------- */
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 220px;
+  background: var(--navy);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  flex-shrink: 0;
+}
+.brand { font-size: 18px; font-weight: bold; margin-bottom: 24px; padding: 0 8px; }
+.nav-link {
+  color: #cfd9e8; text-decoration: none; padding: 10px 12px; border-radius: 6px; margin-bottom: 4px; font-size: 14px;
+}
+.nav-link:hover { background: rgba(255,255,255,0.08); color: white; }
+.nav-link.active { background: var(--accent); color: white; }
+.sidebar-spacer { flex: 1; }
+.user-email { font-size: 12px; color: #9fb0c9; padding: 0 8px 10px; word-break: break-all; }
+
+.content { flex: 1; padding: 28px 36px; max-width: 1100px; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-block; padding: 9px 16px; border-radius: 6px; font-size: 14px;
+  border: 1px solid transparent; cursor: pointer; text-decoration: none; text-align: center;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #245f96; }
+.btn-ghost { background: transparent; color: #333; border-color: var(--border); }
+.btn-ghost:hover { background: #eef1f4; }
+.btn-danger { background: white; color: var(--danger); border-color: var(--danger); }
+.btn-danger:hover { background: #fdecea; }
+.btn-block { width: 100%; margin-top: 16px; }
+.sidebar .btn-ghost { color: #cfd9e8; border-color: rgba(255,255,255,0.2); }
+.sidebar .btn-ghost:hover { background: rgba(255,255,255,0.08); }
+
+/* ---------- Layout helpers ---------- */
+.view-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;
+}
+.view-header h2 { margin: 0; color: var(--navy); }
+.today-label { color: var(--grey); font-size: 13px; }
+
+.card {
+  background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 18px;
+}
+.card h3 { margin: 0 0 12px; color: var(--navy); font-size: 15px; }
+
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+.task-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg); border-radius: 6px; }
+.task-row input[type="checkbox"] { width: 16px; height: 16px; }
+.task-row .task-title { flex: 1; font-size: 13px; }
+.task-row .task-title.done { text-decoration: line-through; color: var(--grey); }
+.task-row .task-due { font-size: 12px; color: var(--grey); }
+.task-row .task-client { font-size: 11px; color: var(--accent); }
+.detail-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 18px; align-items: start; }
+
+.stats-row { display: flex; gap: 28px; }
+.stat { text-align: center; }
+.stat .num { font-size: 26px; font-weight: bold; color: var(--accent); }
+.stat .label { font-size: 12px; color: var(--grey); }
+
+/* ---------- Lists ---------- */
+.list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+.list-item {
+  display: flex; justify-content: space-between; align-items: center; padding: 10px 12px;
+  background: var(--bg); border-radius: 6px; font-size: 13px; text-decoration: none; color: #222;
+}
+.list-item:hover { background: var(--accent-light); }
+.list-item .tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--accent-light); color: var(--accent); }
+.list-item .tag.overdue { background: #fdecea; color: var(--danger); }
+.empty-note { color: var(--grey); font-size: 13px; padding: 10px 0; }
+
+/* ---------- Table ---------- */
+.toolbar { display: flex; gap: 10px; margin-bottom: 14px; }
+.toolbar input, .toolbar select { padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+.toolbar input { flex: 1; }
+
+.table-wrap { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left; background: var(--accent-light); color: var(--navy); padding: 10px 14px; font-size: 12px;
+}
+.data-table td { padding: 10px 14px; border-top: 1px solid var(--border); }
+.data-table tr.clickable { cursor: pointer; }
+.data-table tr.clickable:hover { background: var(--bg); }
+
+.badge {
+  display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 10px; background: var(--accent-light); color: var(--accent); margin-top: 4px;
+}
+.badge.status-Active-Client { background: #e6f4ea; color: var(--success); }
+.badge.status-Renewal-Due { background: #fdf2e3; color: var(--warn); }
+.badge.status-Lapsed-Lost { background: #fdecea; color: var(--danger); }
+
+/* ---------- Forms ---------- */
+.form-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: #444; margin-bottom: 4px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: inherit;
+}
+.form-actions { display: flex; gap: 10px; margin-top: 16px; align-items: center; }
+
+/* ---------- Timeline ---------- */
+.timeline { display: flex; flex-direction: column; gap: 12px; }
+.timeline-item { 

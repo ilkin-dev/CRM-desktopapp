@@ -1,0 +1,29 @@
+// ============================================================
+// Firestore Security Rules
+// Paste this into: Firebase Console → Firestore Database → Rules
+// (replace the default rules entirely), then click "Publish".
+//
+// What this does: only YOUR signed-in account can read or write
+// any data, and only documents stamped with your own uid as
+// ownerUid. No one else — even with the public config values in
+// firebase-config.js — can read or write your client data.
+// ============================================================
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /clients/{clientId} {
+      allow read, update, delete: if request.auth != null
+                                    && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null
+                     && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    match /interactions/{interactionId} {
+      allow read, update, delete: if request.auth != null
+                                    && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null
+                     && request.resource.data.ownerUid == request.auth.uid;
+    }
+
+    m
