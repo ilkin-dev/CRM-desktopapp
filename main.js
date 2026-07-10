@@ -59,6 +59,21 @@ function createWindow() {
 
   Menu.setApplicationMenu(null); // clean UI, no default File/Edit/View menu
   win.loadURL(`http://127.0.0.1:${PORT}/index.html`);
+
+  // Removing the menu also removes the default DevTools shortcut, so
+  // register it manually (Ctrl+Shift+I / F12) — needed for troubleshooting.
+  win.webContents.on("before-input-event", (event, input) => {
+    const isDevToolsCombo =
+      (input.control && input.shift && input.key.toLowerCase() === "i") ||
+      input.key === "F12";
+    if (isDevToolsCombo) {
+      win.webContents.toggleDevTools();
+    }
+  });
+
+  // TEMPORARY: auto-open DevTools on launch while we're debugging the
+  // login issue. Safe to remove later once everything's confirmed working.
+  win.webContents.openDevTools({ mode: "detach" });
 }
 
 app.whenReady().then(async () => {

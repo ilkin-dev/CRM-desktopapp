@@ -24,6 +24,22 @@
     </div>
   </div>
 
+  <!-- Catches script/module load failures (e.g. blocked network) that
+       would otherwise fail silently with no visible error. -->
+  <script>
+    function showBootError(msg) {
+      var el = document.getElementById("login-error");
+      if (el) el.textContent = "Startup error: " + msg;
+      console.error("Boot error:", msg);
+    }
+    window.addEventListener("error", function (e) {
+      showBootError(e.message || String(e.error));
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+      showBootError((e.reason && e.reason.message) || String(e.reason));
+    });
+  </script>
+
   <!-- APP SHELL -->
   <div id="app" class="app hidden">
     <nav class="sidebar">
