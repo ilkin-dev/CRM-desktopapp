@@ -44,11 +44,26 @@
   <div id="app" class="app hidden">
     <nav class="sidebar">
       <div class="brand">Client Book</div>
-      <a href="#/dashboard" class="nav-link" data-route="dashboard">Dashboard</a>
-      <a href="#/clients" class="nav-link" data-route="clients">Clients</a>
-      <a href="#/clients/new" class="nav-link" data-route="new-client">+ Add Client</a>
-      <a href="#/tasks" class="nav-link" data-route="tasks">Tasks</a>
-      <a href="#/commissions" class="nav-link" data-route="commissions">Commissions</a>
+      <a href="#/dashboard" class="nav-link" data-route="dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="#/clients" class="nav-link" data-route="clients">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"/><circle cx="17" cy="7.5" r="2.6"/><path d="M15.8 13.6c2.9.3 5.2 2.7 5.2 6"/></svg>
+        Clients
+      </a>
+      <a href="#/clients/new" class="nav-link" data-route="new-client">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.25"/><path d="M12 8v8M8 12h8"/></svg>
+        Add Client
+      </a>
+      <a href="#/tasks" class="nav-link" data-route="tasks">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6.5l1.6 1.6L8.5 5" /><path d="M11 6h9"/><path d="M4 12.5l1.6 1.6L8.5 11" /><path d="M11 12h9"/><path d="M4 18.5l1.6 1.6L8.5 17" /><path d="M11 18h9"/></svg>
+        Tasks
+      </a>
+      <a href="#/commissions" class="nav-link" data-route="commissions">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.25"/><path d="M12 7.3v9.4M9.3 15.2c0 1.1 1.1 1.9 2.7 1.9s2.7-.8 2.7-1.9-1.1-1.6-2.7-1.9c-1.6-.3-2.7-.8-2.7-1.9s1.1-1.9 2.7-1.9 2.7.7 2.7 1.7"/></svg>
+        Commissions
+      </a>
       <div class="sidebar-spacer"></div>
       <div class="user-email" id="user-email"></div>
       <button id="logout-btn" class="btn btn-ghost btn-block">Sign Out</button>
@@ -57,6 +72,9 @@
       <!-- Views render here -->
     </main>
   </div>
+
+  <!-- Toast notifications -->
+  <div id="toast-container" class="toast-container"></div>
 
   <!-- TEMPLATES -->
   <template id="tpl-dashboard">
@@ -107,6 +125,34 @@
     </div>
   </template>
 
+  <datalist id="carrier-list">
+    <option value="Intact Insurance">
+    <option value="Aviva Canada">
+    <option value="Economical Insurance">
+    <option value="Definity (Sonnet/Family/Travelers)">
+    <option value="Wawanesa">
+    <option value="Gore Mutual">
+    <option value="Travelers Canada">
+    <option value="TD Insurance">
+    <option value="Desjardins">
+    <option value="RSA / Intact">
+    <option value="Pembridge">
+    <option value="Chubb">
+    <option value="Northbridge">
+    <option value="Co-operators">
+  </datalist>
+
+  <datalist id="referral-list">
+    <option value="Existing Client Referral">
+    <option value="Family/Friend">
+    <option value="Website">
+    <option value="Google Search">
+    <option value="Social Media">
+    <option value="Walk-in">
+    <option value="Cold Call">
+    <option value="Self">
+  </datalist>
+
   <template id="tpl-client-form">
     <div class="view-header">
       <h2 id="client-form-title">Add Client</h2>
@@ -123,19 +169,20 @@
         </div>
         <div class="field">
           <label>Phone</label>
-          <input type="tel" id="f-phone" />
+          <input type="tel" id="f-phone" placeholder="(416) 555-0123" data-format="phone" />
         </div>
         <div class="field">
           <label>Email</label>
           <input type="email" id="f-email" />
         </div>
-        <div class="field">
+        <div class="field field-wide">
           <label>Line(s) of Business</label>
-          <input type="text" id="f-lob" placeholder="e.g. Auto, Home" />
+          <div class="checkbox-group" id="f-lob-group"></div>
+          <input type="text" id="f-lob-other" class="hidden" placeholder="Describe other line of business" style="margin-top:8px;" />
         </div>
         <div class="field">
           <label>Carrier</label>
-          <input type="text" id="f-carrier" />
+          <input type="text" id="f-carrier" list="carrier-list" placeholder="Start typing or pick one" />
         </div>
         <div class="field">
           <label>Renewal Date</label>
@@ -143,7 +190,7 @@
         </div>
         <div class="field">
           <label>Referral Source</label>
-          <input type="text" id="f-referralSource" placeholder="Who referred them / self" />
+          <input type="text" id="f-referralSource" list="referral-list" placeholder="Who referred them / self" />
         </div>
       </div>
       <div class="field">
@@ -197,15 +244,25 @@
             </div>
             <div class="field" id="i-quote-amount-wrap">
               <label>Quote Amount ($)</label>
-              <input type="number" id="i-quoteAmount" step="0.01" />
+              <input type="text" inputmode="decimal" id="i-quoteAmount" data-format="currency" />
             </div>
             <div class="field" id="i-quote-lob-wrap">
-              <label>Quote Line of Business</label>
-              <input type="text" id="i-quoteLOB" />
+              <label>Line of Business</label>
+              <select id="i-quoteLOB">
+                <option value="">— Select —</option>
+                <option>Auto</option>
+                <option>Home</option>
+                <option>Auto + Home Bundle</option>
+                <option>Tenant</option>
+                <option>Condo</option>
+                <option>Business/Commercial</option>
+                <option>Umbrella</option>
+                <option>Other</option>
+              </select>
             </div>
             <div class="field" id="i-premium-wrap">
               <label>Premium Amount ($)</label>
-              <input type="number" id="i-premiumAmount" step="0.01" />
+              <input type="text" inputmode="decimal" id="i-premiumAmount" data-format="currency" />
             </div>
             <div class="field" id="i-commission-rate-wrap">
               <label>Commission Rate (%)</label>
@@ -213,7 +270,7 @@
             </div>
             <div class="field" id="i-commission-amount-wrap">
               <label>Commission Amount ($) — auto, editable</label>
-              <input type="number" id="i-commissionAmount" step="0.01" />
+              <input type="text" inputmode="decimal" id="i-commissionAmount" data-format="currency" />
             </div>
             <div class="field">
               <label>Next Follow-up Date</label>
@@ -230,6 +287,17 @@
         </form>
       </section>
     </div>
+
+    <section class="card">
+      <h3>Documents</h3>
+      <form id="document-form" class="doc-upload-row">
+        <select id="doc-category"></select>
+        <input type="file" id="doc-file" accept="image/*,.pdf" required />
+        <button type="submit" class="btn btn-primary">Upload</button>
+      </form>
+      <div id="doc-upload-status" class="upload-status"></div>
+      <div id="documents-grid" class="documents-grid"></div>
+    </section>
 
     <section class="card">
       <h3>Timeline</h3>
@@ -298,6 +366,10 @@
         </table>
       </div>
     </section>
+  </template>
+
+  <template id="tpl-spinner">
+    <div class="spinner-wrap"><div class="spinner"></div></div>
   </template>
 
   <script type="module" src="app.js"></script>

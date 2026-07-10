@@ -6,7 +6,7 @@
 // of file://) avoids ES module / CORS restrictions in Chromium and
 // lets the Firebase SDK behave exactly like it does in a browser.
 // ============================================================
-const { app, BrowserWindow, Menu } = require("electron");
+const { app, BrowserWindow, Menu, shell } = require("electron");
 const path = require("path");
 const http = require("http");
 const fs = require("fs");
@@ -60,6 +60,14 @@ function createWindow() {
   Menu.setApplicationMenu(null); // clean UI, no default File/Edit/View menu
   win.loadURL(`http://127.0.0.1:${PORT}/index.html`);
 
+  // target="_blank" links (e.g. "View" on an uploaded document) are blocked
+  // by Electron's security defaults unless explicitly handled — route them
+  // to the user's normal default browser instead of doing nothing.
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
+
   // Removing the menu also removes the default DevTools shortcut, so
   // register it manually (Ctrl+Shift+I / F12) — needed for troubleshooting.
   win.webContents.on("before-input-event", (event, input) => {
@@ -71,9 +79,8 @@ function createWindow() {
     }
   });
 
-  // TEMPORARY: auto-open DevTools on launch while we're debugging the
-  // login issue. Safe to remove later once everything's confirmed working.
-  win.webContents.openDevTools({ mode: "detach" });
+  // DevTools no longer auto-opens now that login is confirmed working.
+  // Press Ctrl+Shift+I or F12 any time you need it for troubleshooting.
 }
 
 app.whenReady().then(async () => {

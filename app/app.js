@@ -7,6 +7,11 @@ import {
   listInteractionsForClient, listAllInteractions, createInteraction,
   listTasks, createTask, updateTask, deleteTask
 } from "./db.js";
+import {
+  DOCUMENT_CATEGORIES, uploadClientDocument, listClientDocuments, deleteClientDocument
+} from "./storage.js";
+
+const LOB_OPTIONS = ["Auto", "Home", "Auto + Home Bundle", "Tenant", "Condo", "Business/Commercial", "Umbrella", "Other"];
 
 const loginScreen = document.getElementById("login-screen");
 const appShell = document.getElementById("app");
@@ -217,6 +222,9 @@ async function renderClientsList() {
     statusFilter.appendChild(opt);
   });
 
+  document.getElementById("clients-tbody").innerHTML =
+    `<tr><td colspan="6"><div class="spinner-wrap"><div class="spinner"></div></div></td></tr>`;
+
   const clients = await listClients();
   const interactions = await listAllInteractions();
   const lastContactByClient = {};
@@ -276,24 +284,47 @@ async function renderClientForm(clientId) {
     statusSelect.appendChild(opt);
   });
 
+  const phoneInput = document.getElementById("f-phone");
+  attachPhoneFormatter(phoneInput);
+
+  const lobGroup = document.getElementById("f-lob-group");
+  const lobOtherInput = document.getElementById("f-lob-other");
+  function syncLobOtherVisibility() {
+    const checked = getLobCheckboxValues(lobGroup);
+    lobOtherInput.classList.toggle("hidden", !checked.includes("Other"));
+  }
+
   let existing = null;
+  let existingLob = [];
   if (clientId) {
     existing = await getClient(clientId);
     document.getElementById("client-form-title").textContent = "Edit Client";
     document.getElementById("f-fullName").value = existing.fullName || "";
     document.getElementById("f-status").value = existing.status || "New Lead";
-    document.getElementById("f-phone").value = existing.phone || "";
+    phoneInput.value = existing.phone || "";
     document.getElementById("f-email").value = existing.email || "";
-    document.getElementById("f-lob").value = existing.lineOfBusiness || "";
     document.getElementById("f-carrier").value = existing.carrier || "";
     document.getElementById("f-renewalDate").value = existing.renewalDate || "";
     document.getElementById("f-referralSource").value = existing.referralSource || "";
     document.getElementById("f-notes").value = existing.notes || "";
+
+    // Parse stored comma-separated LOB string back into checkboxes,
+    // treating any value not in the known list as "Other" free text.
+    const stored = (existing.lineOfBusiness || "").split(",").map(s => s.trim()).filter(Boolean);
+    const known = stored.filter(v => LOB_OPTIONS.includes(v));
+    const unknown = stored.filter(v => !LOB_OPTIONS.includes(v));
+    existingLob = known;
+    if (unknown.length) {
+      existingLob = existingLob.concat(["Other"]);
+      lobOtherInput.value = unknown.join(", ");
+    }
+
     const delBtn = document.getElementById("delete-client-btn");
     delBtn.classList.remove("hidden");
     delBtn.addEventListener("click", async () => {
       if (confirm(`Delete ${existing.fullName}? This also removes their interaction history. This cannot be undone.`)) {
         await deleteClient(clientId);
+        toast(`${existing.fullName} deleted.`, "success");
         window.location.hash = "#/clients";
       }
     });
@@ -301,14 +332,23 @@ async function renderClientForm(clientId) {
     statusSelect.value = "New Lead";
   }
 
+  buildLobCheckboxes(lobGroup, existingLob);
+  syncLobOtherVisibility();
+  lobGroup.addEventListener("change", syncLobOtherVisibility);
+
   document.getElementById("client-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const checkedLob = getLobCheckboxValues(lobGroup);
+    const lobValues = checkedLob.filter(v => v !== "Other");
+    if (checkedLob.includes("Other") && lobOtherInput.value.trim()) {
+      lobValues.push(lobOtherInput.value.trim());
+    }
     const data = {
       fullName: document.getElementById("f-fullName").value.trim(),
       status: document.getElementById("f-status").value,
-      phone: document.getElementById("f-phone").value.trim(),
+      phone: phoneInput.value.trim(),
       email: document.getElementById("f-email").value.trim(),
-      lineOfBusiness: document.getElementById("f-lob").value.trim(),
+      lineOfBusiness: lobValues.join(", "),
       carrier: document.getElementById("f-carrier").value.trim(),
       renewalDate: document.getElementById("f-renewalDate").value,
       referralSource: document.getElementById("f-referralSource").value.trim(),
@@ -317,9 +357,11 @@ async function renderClientForm(clientId) {
     if (!data.fullName) return;
     if (clientId) {
       await updateClient(clientId, data);
+      toast("Client updated.", "success");
       window.location.hash = `#/clients/${clientId}`;
     } else {
       const ref = await createClient(data);
+      toast("Client added.", "success");
       window.location.hash = `#/clients/${ref.id}`;
     }
   });
@@ -361,9 +403,11 @@ async function renderClientDetail(clientId) {
   const premiumWrap = document.getElementById("i-premium-wrap");
   const commissionRateWrap = document.getElementById("i-commission-rate-wrap");
   const commissionAmountWrap = document.getElementById("i-commission-amount-wrap");
+  const quoteAmountInput = document.getElementById("i-quoteAmount");
   const premiumInput = document.getElementById("i-premiumAmount");
   const rateInput = document.getElementById("i-commissionRate");
   const commissionAmountInput = document.getElementById("i-commissionAmount");
+  applyFieldFormatters(document.getElementById("interaction-form"));
 
   function toggleTypeFields() {
     const isQuote = typeSelect.value === "Quote";
@@ -378,11 +422,11 @@ async function renderClientDetail(clientId) {
   toggleTypeFields();
 
   function autoCalcCommission() {
-    const premium = Number(premiumInput.value) || 0;
+    const premium = currencyValue(premiumInput) || 0;
     const rate = Number(rateInput.value) || 0;
     if (premium && rate) commissionAmountInput.value = (premium * rate / 100).toFixed(2);
   }
-  premiumInput.addEventListener("input", autoCalcCommission);
+  premiumInput.addEventListener("blur", autoCalcCommission);
   rateInput.addEventListener("input", autoCalcCommission);
 
   document.getElementById("interaction-form").addEventListener("submit", async (e) => {
@@ -393,16 +437,17 @@ async function renderClientDetail(clientId) {
       type: typeSelect.value,
       date: document.getElementById("i-date").value || todayStr(),
       summary: document.getElementById("i-summary").value.trim(),
-      quoteAmount: document.getElementById("i-quoteAmount").value ? Number(document.getElementById("i-quoteAmount").value) : null,
+      quoteAmount: currencyValue(quoteAmountInput),
       quoteLOB: document.getElementById("i-quoteLOB").value.trim() || null,
       followUpDate: document.getElementById("i-followUpDate").value || null,
       followUpDone: false,
-      premiumAmount: isBind && premiumInput.value ? Number(premiumInput.value) : null,
+      premiumAmount: isBind ? currencyValue(premiumInput) : null,
       commissionRate: isBind && rateInput.value ? Number(rateInput.value) : null,
-      commissionAmount: isBind && commissionAmountInput.value ? Number(commissionAmountInput.value) : null,
+      commissionAmount: isBind ? currencyValue(commissionAmountInput) : null,
     };
     if (!data.summary) return;
     await createInteraction(data);
+    toast(isBind ? "Policy bind logged." : `${data.type} logged.`, "success");
     if (isBind) {
       // Binding a policy naturally moves the client to Active Client if they aren't already.
       const c = await getClient(clientId);
@@ -412,6 +457,45 @@ async function renderClientDetail(clientId) {
     }
     renderClientDetail(clientId); // refresh
   });
+
+  // ---- Documents ----
+  const docCategorySelect = document.getElementById("doc-category");
+  DOCUMENT_CATEGORIES.forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    docCategorySelect.appendChild(opt);
+  });
+
+  const docStatus = document.getElementById("doc-upload-status");
+  const docsGrid = document.getElementById("documents-grid");
+
+  document.getElementById("document-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fileInput = document.getElementById("doc-file");
+    const file = fileInput.files[0];
+    if (!file) return;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    docStatus.textContent = `Uploading ${file.name}...`;
+    docStatus.classList.remove("error");
+    try {
+      await uploadClientDocument(clientId, docCategorySelect.value, file);
+      docStatus.textContent = "";
+      fileInput.value = "";
+      toast("Document uploaded.", "success");
+      await renderDocuments(clientId, docsGrid);
+    } catch (err) {
+      docStatus.textContent = "Upload failed: " + (err.message || "unknown error");
+      docStatus.classList.add("error");
+      toast("Upload failed.", "error");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  showSpinner(docsGrid);
+  await renderDocuments(clientId, docsGrid);
 
   const interactions = await listInteractionsForClient(clientId);
   const timeline = document.getElementById("detail-timeline");
@@ -437,6 +521,49 @@ async function renderClientDetail(clientId) {
       timeline.appendChild(div);
     });
   }
+}
+
+async function renderDocuments(clientId, gridEl) {
+  let docs;
+  try {
+    docs = await listClientDocuments(clientId);
+  } catch (err) {
+    gridEl.innerHTML = `<div class="empty-note">Couldn't load documents: ${escapeHtml(err.message || "unknown error")}</div>`;
+    return;
+  }
+  if (docs.length === 0) {
+    gridEl.innerHTML = '<div class="empty-note">No documents uploaded yet.</div>';
+    return;
+  }
+  gridEl.innerHTML = "";
+  docs.forEach(doc => {
+    const card = document.createElement("div");
+    card.className = "doc-card";
+    card.innerHTML = `
+      <div class="doc-thumb">
+        ${isImageType(doc.contentType) ? `<img src="${doc.url}" alt="${escapeHtml(doc.name)}" />` : FILE_ICON_SVG}
+      </div>
+      <div class="doc-meta">
+        <div class="doc-category">${escapeHtml(doc.category)}</div>
+        <div class="doc-name" title="${escapeHtml(doc.name)}">${escapeHtml(doc.name)}</div>
+      </div>
+      <div class="doc-actions">
+        <a href="${doc.url}" target="_blank" rel="noopener">View</a>
+        <button type="button" class="doc-delete">Delete</button>
+      </div>
+    `;
+    card.querySelector(".doc-delete").addEventListener("click", async () => {
+      if (!confirm(`Delete "${doc.name}"? This cannot be undone.`)) return;
+      try {
+        await deleteClientDocument(doc.path);
+        toast("Document deleted.", "success");
+        await renderDocuments(clientId, gridEl);
+      } catch (err) {
+        toast("Delete failed.", "error");
+      }
+    });
+    gridEl.appendChild(card);
+  });
 }
 
 // ---------------- Tasks ----------------
@@ -469,6 +596,7 @@ async function renderTasks() {
       clientId: document.getElementById("t-clientId").value || null,
       notes: document.getElementById("t-notes").value.trim(),
     });
+    toast("Task added.", "success");
     renderTasks();
   });
 
@@ -491,6 +619,7 @@ async function renderTasks() {
     row.querySelector("button").addEventListener("click", async () => {
       if (confirm(`Delete task "${t.title}"?`)) {
         await deleteTask(t.id);
+        toast("Task deleted.", "success");
         renderTasks();
       }
     });
@@ -566,4 +695,91 @@ function escapeHtml(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function toast(message, type) {
+  const container = document.getElementById("toast-container");
+  const el = document.createElement("div");
+  el.className = "toast" + (type ? " " + type : "");
+  el.textContent = message;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add("fade-out");
+    setTimeout(() => el.remove(), 220);
+  }, 2600);
+}
+
+function showSpinner(container) {
+  container.innerHTML = "";
+  container.appendChild(document.getElementById("tpl-spinner").content.cloneNode(true));
+}
+
+// Formats a phone number as (XXX) XXX-XXXX while the user types.
+function attachPhoneFormatter(input) {
+  input.addEventListener("input", () => {
+    const digits = input.value.replace(/\D/g, "").slice(0, 10);
+    let out = digits;
+    if (digits.length > 6) out = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    else if (digits.length > 3) out = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    else if (digits.length > 0) out = `(${digits}`;
+    input.value = out;
+  });
+}
+
+// Shows a plain number while focused (easy editing), formats as
+// currency with commas on blur. Reads/writes plain numeric strings
+// via input.value regardless of display state.
+function attachCurrencyFormatter(input) {
+  function toPlain() {
+    const n = Number(String(input.value).replace(/[^0-9.]/g, ""));
+    input.value = n ? String(n) : "";
+  }
+  function toFormatted() {
+    const n = Number(String(input.value).replace(/[^0-9.]/g, ""));
+    input.value = n ? n.toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
+  }
+  input.addEventListener("focus", toPlain);
+  input.addEventListener("blur", toFormatted);
+  if (input.value) toFormatted();
+}
+
+function currencyValue(input) {
+  const n = Number(String(input.value).replace(/[^0-9.]/g, ""));
+  return n || null;
+}
+
+// Auto-attaches formatters to any [data-format] input inside a container.
+function applyFieldFormatters(container) {
+  container.querySelectorAll('[data-format="phone"]').forEach(attachPhoneFormatter);
+  container.querySelectorAll('[data-format="currency"]').forEach(attachCurrencyFormatter);
+}
+
+// Builds the Line-of-Business checkbox group into `container`, pre-checking
+// values found in `selected` (array of strings). Returns a getValue() function.
+function buildLobCheckboxes(container, selected) {
+  container.innerHTML = "";
+  const selectedSet = new Set(selected || []);
+  LOB_OPTIONS.forEach(opt => {
+    const label = document.createElement("label");
+    label.className = "checkbox-pill";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = opt;
+    cb.checked = selectedSet.has(opt);
+    if (cb.checked) label.classList.add("checked");
+    cb.addEventListener("change", () => label.classList.toggle("checked", cb.checked));
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(" " + opt));
+    container.appendChild(label);
+  });
+}
+
+function getLobCheckboxValues(container) {
+  return Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+}
+
+const FILE_ICON_SVG = '<svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2.5h8l4 4V21a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1z"/><path d="M14 2.5V7h4"/></svg>';
+
+function isImageType(contentType) {
+  return !!(contentType && contentType.startsWith("image/"));
 }
