@@ -7,12 +7,12 @@
 // hiding this config.
 // ============================================================
 export const firebaseConfig = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  projectId: "REPLACE_ME",
-  storageBucket: "REPLACE_ME.appspot.com",
-  messagingSenderId: "REPLACE_ME",
-  appId: "REPLACE_ME",
+  apiKey: "AIzaSyBuCNLW6xi6sHYi0cNEmiMzbAPH6BLlNZo",
+  authDomain: "cra-desktopapp.firebaseapp.com",
+  projectId: "cra-desktopapp",
+  storageBucket: "cra-desktopapp.firebasestorage.app",
+  messagingSenderId: "369787339762",
+  appId: "1:369787339762:web:5f66275477b28e1157a16b",
 };
 
 // If you ever want to restrict the app to only your account,
