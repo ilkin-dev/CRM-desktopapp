@@ -1,0 +1,38 @@
+{
+  "name": "crm-desktopapp",
+  "productName": "Kenny's Client Book",
+  "version": "1.0.0",
+  "description": "Personal client management desktop app for Wellcare Insurance Corp",
+  "main": "main.js",
+  "author": "Kenny",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis --publish never"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.kenny.clientbook",
+    "productName": "Kenny's Client Book",
+    "publish": null,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "app/**/*"
+    ],
+    "win": {
+      "target": ["nsis"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  }
+}

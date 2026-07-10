@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kenny's Client Book — Wellcare</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <h1>Client Book</h1>
+      <p class="subtitle">Sign in to manage your clients</p>
+      <form id="login-form">
+        <label>Email</label>
+        <input type="email" id="login-email" required autocomplete="username" />
+        <label>Password</label>
+        <input type="password" id="login-password" required autocomplete="current-password" />
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        <p id="login-error" class="error-text"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Catches script/module load failures (e.g. blocked network) that
+       would otherwise fail silently with no visible error. -->
+  <script>
+    function showBootError(msg) {
+      var el = document.getElementById("login-error");
+      if (el) el.textContent = "Startup error: " + msg;
+      console.error("Boot error:", msg);
+    }
+    window.addEventListener("error", function (e) {
+      showBootError(e.message || String(e.error));
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+      showBootError((e.reason && e.reason.message) || String(e.reason));
+    });
+  </script>
+
+  <!-- APP SHELL -->
+  <div id="app" class="app hidden">
+    <nav class="sidebar">
+      <div class="brand">Client Book</div>
+      <a href="#/dashboard" class="nav-link" data-route="dashboard">Dashboard</a>
+      <a href="#/clients" class="nav-link" data-route="clients">Clients</a>
+      <a href="#/clients/new" class="nav-link" data-route="new-client">+ Add Client</a>
+      <a href="#/tasks" class="nav-link" data-route="tasks">Tasks</a>
+      <a href="#/commissions" class="nav-link" data-route="commissions">Commissions</a>
+      <div class="sidebar-spacer"></div>
+      <div class="user-email" id="user-email"></div>
+      <button id="logout-btn" class="btn btn-ghost btn-block">Sign Out</button>
+    </nav>
+    <main class="content" id="content">
+      <!-- Views render here -->
+    </main>
+  </div>
+
+  <!-- TEMPLATES -->
+  <template id="tpl-dashboard">
+    <div class="view-header">
+      <h2>Dashboard</h2>
+      <div class="today-label" id="today-label"></div>
+    </div>
+    <div class="dash-grid">
+      <section class="card">
+        <h3>Follow-ups Due (today &amp; overdue)</h3>
+        <div id="dash-followups" class="list"></div>
+      </section>
+      <section class="card">
+        <h3>Renewals — Next 90 Days</h3>
+        <div id="dash-renewals" class="list"></div>
+      </section>
+      <section class="card">
+        <h3>Tasks Due (today &amp; overdue)</h3>
+        <div id="dash-tasks" class="list"></div>
+      </section>
+    </div>
+    <section class="card">
+      <h3>Quick Stats</h3>
+      <div class="stats-row" id="dash-stats"></div>
+    </section>
+  </template>
+
+  <template id="tpl-clients">
+    <div class="view-header">
+      <h2>Clients</h2>
+      <a href="#/clients/new" class="btn btn-primary">+ Add Client</a>
+    </div>
+    <div class="toolbar">
+      <input type="text" id="client-search" placeholder="Search by name, phone, email..." />
+      <select id="status-filter">
+        <option value="">All statuses</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="clients-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Status</th><th>Line of Business</th><th>Renewal</th><th>Phone</th><th>Last Contact</th>
+          </tr>
+        </thead>
+        <tbody id="clients-tbody"></tbody>
+      </table>
+    </div>
+  </template>
+
+  <template id="tpl-client-form">
+    <div class="view-header">
+      <h2 id="client-form-title">Add Client</h2>
+    </div>
+    <form id="client-form" class="form-card">
+      <div class="form-grid">
+        <div class="field">
+          <label>Full Name *</label>
+          <input type="text" id="f-fullName" required />
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="f-status"></select>
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input type="tel" id="f-phone" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="f-email" />
+        </div>
+        <div class="field">
+          <label>Line(s) of Business</label>
+          <input type="text" id="f-lob" placeholder="e.g. Auto, Home" />
+        </div>
+        <div class="field">
+          <label>Carrier</label>
+          <input type="text" id="f-carrier" />
+        </div>
+        <div class="field">
+          <label>Renewal Date</label>
+          <input type="date" id="f-renewalDate" />
+        </div>
+        <div class="field">
+          <label>Referral Source</label>
+          <input type="text" id="f-referralSource" placeholder="Who referred them / self" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Household Notes</label>
+        <textarea id="f-notes" rows="3" placeholder="e.g. teen driver added 2027, considering umbrella policy"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Client</button>
+        <a href="#/clients" class="btn btn-ghost">Cancel</a>
+        <button type="button" id="delete-client-btn" class="btn btn-danger hidden">Delete Client</button>
+      </div>
+    </form>
+  </template>
+
+  <template id="tpl-client-detail">
+    <div class="view-header">
+      <div>
+        <h2 id="detail-name"></h2>
+        <span class="badge" id="detail-status"></span>
+      </div>
+      <div>
+        <a href="#" id="edit-client-link" class="btn btn-ghost">Edit</a>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <section class="card">
+        <h3>Client Info</h3>
+        <dl class="info-list" id="detail-info"></dl>
+      </section>
+
+      <section class="card">
+        <h3>Log an Interaction</h3>
+        <form id="interaction-form" class="form-card">
+          <div class="form-grid">
+            <div class="field">
+              <label>Type</label>
+              <select id="i-type">
+                <option>Call</option>
+                <option>Quote</option>
+                <option>Email</option>
+                <option>Meeting</option>
+                <option>Note</option>
+                <option>Bind</option>
+                <option>DASH Report</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="i-date" required />
+            </div>
+            <div class="field" id="i-quote-amount-wrap">
+              <label>Quote Amount ($)</label>
+              <input type="number" id="i-quoteAmount" step="0.01" />
+            </div>
+            <div class="field" id="i-quote-lob-wrap">
+              <label>Quote Line of Business</label>
+              <input type="text" id="i-quoteLOB" />
+            </div>
+            <div class="field" id="i-premium-wrap">
+              <label>Premium Amount ($)</label>
+              <input type="number" id="i-premiumAmount" step="0.01" />
+            </div>
+            <div class="field" id="i-commission-rate-wrap">
+              <label>Commission Rate (%)</label>
+              <input type="number" id="i-commissionRate" step="0.01" />
+            </div>
+            <div class="field" id="i-commission-amount-wrap">
+              <label>Commission Amount ($) — auto, editable</label>
+              <input type="number" id="i-commissionAmount" step="0.01" />
+            </div>
+            <div class="field">
+              <label>Next Follow-up Date</label>
+              <input type="date" id="i-followUpDate" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Summary / Notes *</label>
+            <textarea id="i-summary" rows="2" required placeholder="What happened / what was discussed"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add to Timeline</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <section class="card">
+      <h3>Timeline</h3>
+      <div id="detail-timeline" class="timeline"></div>
+    </section>
+  </template>
+
+  <template id="tpl-tasks">
+    <div class="view-header">
+      <h2>Tasks</h2>
+    </div>
+    <section class="card">
+      <h3>Add a Task</h3>
+      <form id="task-form" class="form-card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Title *</label>
+            <input type="text" id="t-title" required placeholder="e.g. Submit endorsement request" />
+          </div>
+          <div class="field">
+            <label>Due Date</label>
+            <input type="date" id="t-dueDate" />
+          </div>
+          <div class="field">
+            <label>Linked Client (optional)</label>
+            <select id="t-clientId">
+              <option value="">— None —</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="t-notes" rows="2"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Add Task</button>
+        </div>
+      </form>
+    </section>
+    <section class="card">
+      <h3>Open Tasks</h3>
+      <div id="tasks-open-list" class="list" style="max-height:none;"></div>
+    </section>
+    <section class="card">
+      <h3>Completed</h3>
+      <div id="tasks-done-list" class="list" style="max-height:none;"></div>
+    </section>
+  </template>
+
+  <template id="tpl-commissions">
+    <div class="view-header">
+      <h2>Commissions</h2>
+    </div>
+    <section class="card">
+      <h3>Summary</h3>
+      <div class="stats-row" id="comm-stats"></div>
+    </section>
+    <section class="card">
+      <h3>Bound Policies</h3>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Date</th><th>Client</th><th>Line of Business</th><th>Premium</th><th>Rate</th><th>Commission</th></tr>
+          </thead>
+          <tbody id="comm-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

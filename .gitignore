@@ -1,0 +1,9 @@
+node_modules/
+dist/
+releases/
+out/
+*.exe
+*.dll
+*.blockmap
+*.7z
+.DS_Store
