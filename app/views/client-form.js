@@ -160,14 +160,18 @@ export async function renderClientForm(content, clientId) {
     data.yearsLicensed = yearsLicensedVal ? Number(yearsLicensedVal) : null;
 
     if (!data.fullName) return;
-    if (clientId) {
-      await updateClient(clientId, data);
-      toast("Client updated.", "success");
-      window.location.hash = `#/clients/${clientId}`;
-    } else {
-      const ref = await createClient(data);
-      toast("Client added.", "success");
-      window.location.hash = `#/clients/${ref.id}`;
+    try {
+      if (clientId) {
+        await updateClient(clientId, data);
+        toast("Client updated.", "success");
+        window.location.hash = `#/clients/${clientId}`;
+      } else {
+        const ref = await createClient(data);
+        toast("Client added.", "success");
+        window.location.hash = `#/clients/${ref.id}`;
+      }
+    } catch (err) {
+      toast("Couldn't save client: " + (err.message || "unknown error"), "error");
     }
   });
 }
