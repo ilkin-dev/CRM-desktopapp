@@ -12,13 +12,15 @@
   <div id="login-screen" class="login-screen">
     <div class="login-card">
       <h1><span class="brand-icon" data-icon="folder"></span> Client Book</h1>
-      <p class="subtitle">Sign in to manage your clients</p>
+      <p class="subtitle" id="login-subtitle">Sign in to manage your clients</p>
       <form id="login-form">
-        <label>Email</label>
-        <input type="email" id="login-email" required autocomplete="username" />
-        <label>Password</label>
+        <label id="login-password-label">Password</label>
         <input type="password" id="login-password" required autocomplete="current-password" />
-        <button type="submit" class="btn btn-primary btn-block"><span class="icon-slot" data-icon="key"></span> Sign In</button>
+        <div id="login-confirm-wrap" class="hidden">
+          <label>Confirm Password</label>
+          <input type="password" id="login-password-confirm" autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block"><span class="icon-slot" data-icon="key"></span> <span id="login-submit-label">Sign In</span></button>
         <p id="login-error" class="error-text"></p>
       </form>
     </div>

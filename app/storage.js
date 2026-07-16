@@ -1,16 +1,10 @@
 // ============================================================
-// Firebase Storage access layer — client document uploads.
-// Path convention: clients/{ownerUid}/{clientId}/{category}/{timestamp}_{filename}
-// Storage itself is the source of truth for what documents exist
-// (no separate Firestore bookkeeping needed) — we just list the
-// folder per client and derive category from the path.
+// Local document storage access layer. Files are saved to disk by the
+// main process (see db/documents.js) and indexed in SQLite; this
+// module just wraps window.crmAPI.documents.* with the same function
+// names/shapes the previous Firebase Storage version exposed, so
+// views/client-detail.js needed no changes.
 // ============================================================
-import {
-  getStorage, ref, uploadBytes, getDownloadURL, deleteObject, listAll, getMetadata
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-import { app, getUid } from "./firebase-init.js";
-
-const storage = getStorage(app);
 
 export const DOCUMENT_CATEGORIES = [
   "Driver's License",
@@ -18,52 +12,29 @@ export const DOCUMENT_CATEGORIES = [
   "Bill of Sale",
   "Finance Application",
   "Proof of Insurance",
+  "Policy Declaration Page",
+  "Home Inspection Report",
+  "Prior Insurance Pink Slip",
   "Other",
 ];
 
-function slug(str) {
-  return String(str).replace(/[^a-zA-Z0-9]+/g, "-");
-}
-
 export async function uploadClientDocument(clientId, category, file) {
-  const uid = getUid();
-  const path = `clients/${uid}/${clientId}/${slug(category)}/${Date.now()}_${file.name}`;
-  const fileRef = ref(storage, path);
-  await uploadBytes(fileRef, file, { customMetadata: { category, originalName: file.name } });
-  return path;
+  const data = await file.arrayBuffer();
+  return window.crmAPI.documents.upload({
+    clientId,
+    category,
+    name: file.name,
+    contentType: file.type,
+    data,
+  });
 }
 
 export async function listClientDocuments(clientId) {
-  const uid = getUid();
-  const baseRef = ref(storage, `clients/${uid}/${clientId}`);
-  let categoryFolders;
-  try {
-    const top = await listAll(baseRef);
-    categoryFolders = top.prefixes;
-  } catch (err) {
-    return []; // no documents yet / folder doesn't exist
-  }
-
-  const allFiles = [];
-  for (const folderRef of categoryFolders) {
-    const listing = await listAll(folderRef);
-    for (const itemRef of listing.items) {
-      const [url, meta] = await Promise.all([getDownloadURL(itemRef), getMetadata(itemRef)]);
-      allFiles.push({
-        path: itemRef.fullPath,
-        name: (meta.customMetadata && meta.customMetadata.originalName) || itemRef.name,
-        category: (meta.customMetadata && meta.customMetadata.category) || folderRef.name,
-        url,
-        contentType: meta.contentType || "",
-        uploadedAt: meta.timeCreated,
-      });
-    }
-  }
-  allFiles.sort((a, b) => (b.uploadedAt || "").localeCompare(a.uploadedAt || ""));
-  return allFiles;
+  return window.crmAPI.documents.listForClient(clientId);
 }
 
 export async function deleteClientDocument(path) {
-  const fileRef = ref(storage, path);
-  return deleteObject(fileRef);
+  // `path` is the opaque id documents:listForClient's rows carry in
+  // their .path field (see db/documents.js) — not a filesystem path.
+  return window.crmAPI.documents.delete(path);
 }

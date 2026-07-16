@@ -9,9 +9,15 @@
   "private": true,
   "scripts": {
     "start": "electron .",
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
     "build:win": "electron-builder --win nsis --publish never"
   },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0"
+  },
   "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3"
   },
@@ -24,7 +30,13 @@
     },
     "files": [
       "main.js",
+      "preload.js",
+      "ipc.js",
+      "db/**/*",
       "app/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*"
     ],
     "win": {
       "target": ["nsis"]

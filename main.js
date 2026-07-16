@@ -1,15 +1,26 @@
 // ============================================================
 // Electron main process.
-// Spins up a tiny local static file server (built-in http module,
-// no extra dependencies) to serve the app/ folder, then opens a
-// desktop window pointed at it. Using a real http:// origin (instead
-// of file://) avoids ES module / CORS restrictions in Chromium and
-// lets the Firebase SDK behave exactly like it does in a browser.
+//
+// Owns the local SQLite database (via db/index.js) and answers every
+// data request from the renderer over IPC (ipc.js) — no network, no
+// Firebase, no local HTTP API. Documents are saved to disk under
+// userData/documents and served back to the renderer through a
+// custom crm-file:// protocol so <img src>/<a href> keep working
+// exactly like they did with Firebase Storage's download URLs.
+//
+// Still spins up a tiny local static file server (built-in http
+// module) to serve the app/ folder over http://127.0.0.1, purely to
+// avoid ES module / CORS restrictions Chromium applies to file://
+// pages — unrelated to the data layer above.
 // ============================================================
-const { app, BrowserWindow, Menu, shell } = require("electron");
+const { app, BrowserWindow, Menu, shell, protocol, ipcMain, net } = require("electron");
 const path = require("path");
 const http = require("http");
 const fs = require("fs");
+const { pathToFileURL } = require("url");
+
+const { openDatabase } = require("./db");
+const { registerIpcHandlers } = require("./ipc");
 
 const APP_DIR = path.join(__dirname, "app");
 const PORT = 51837; // arbitrary local-only port
@@ -23,6 +34,12 @@ const MIME_TYPES = {
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
 };
+
+// Must be called before app is ready. "standard: true" + "supportFetchAPI"
+// lets crm-file:// URLs work in <img src>/<a href> just like http(s).
+protocol.registerSchemesAsPrivileged([
+  { scheme: "crm-file", privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
+]);
 
 function startServer() {
   return new Promise((resolve) => {
@@ -44,6 +61,15 @@ function startServer() {
   });
 }
 
+function registerFileProtocol() {
+  protocol.handle("crm-file", (request) => {
+    const url = new URL(request.url);
+    const segments = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
+    const filePath = segments.join(path.sep);
+    return net.fetch(pathToFileURL(filePath).toString());
+  });
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1360,
@@ -54,6 +80,7 @@ function createWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
@@ -78,12 +105,19 @@ function createWindow() {
       win.webContents.toggleDevTools();
     }
   });
-
-  // DevTools no longer auto-opens now that login is confirmed working.
-  // Press Ctrl+Shift+I or F12 any time you need it for troubleshooting.
 }
 
+let db;
+
 app.whenReady().then(async () => {
+  const dbPath = path.join(app.getPath("userData"), "crm-data.db");
+  const documentsRoot = path.join(app.getPath("userData"), "documents");
+  fs.mkdirSync(documentsRoot, { recursive: true });
+
+  db = openDatabase(dbPath);
+  registerIpcHandlers(ipcMain, db, documentsRoot);
+  registerFileProtocol();
+
   await startServer();
   createWindow();
 
@@ -94,4 +128,8 @@ app.whenReady().then(async () => {
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
+});
+
+app.on("before-quit", () => {
+  if (db) db.close();
 });
