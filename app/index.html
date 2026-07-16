@@ -231,6 +231,7 @@
       <h2><span class="icon-slot" data-icon="edit"></span> <span id="client-form-title">Add Client</span></h2>
     </div>
     <form id="client-form" class="form-card">
+      <h3 class="form-section-title"><span class="icon-slot" data-icon="clients"></span> Basic Info</h3>
       <div class="form-grid">
         <div class="field">
           <label>Full Name *</label>
@@ -243,6 +244,10 @@
         <div class="field">
           <label>Phone</label>
           <input type="tel" id="f-phone" placeholder="(416) 555-0123" data-format="phone" />
+        </div>
+        <div class="field">
+          <label>Secondary Phone</label>
+          <input type="tel" id="f-secondaryPhone" placeholder="(416) 555-0123" data-format="phone" />
         </div>
         <div class="field">
           <label>Email</label>
@@ -266,10 +271,140 @@
           <input type="text" id="f-referralSource" list="referral-list" placeholder="Who referred them / self" />
         </div>
       </div>
-      <div class="field">
+
+      <h3 class="form-section-title"><span class="icon-slot" data-icon="info-circle"></span> Personal Details</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Date of Birth</label>
+          <input type="date" id="f-dateOfBirth" />
+        </div>
+        <div class="field">
+          <label>Marital Status</label>
+          <select id="f-maritalStatus">
+            <option value="">— Select —</option>
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Common-Law">Common-Law</option>
+            <option value="Divorced">Divorced</option>
+            <option value="Widowed">Widowed</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Occupation</label>
+          <input type="text" id="f-occupation" />
+        </div>
+        <div class="field">
+          <label>Employer</label>
+          <input type="text" id="f-employer" />
+        </div>
+        <div class="field">
+          <label>Preferred Contact Method</label>
+          <select id="f-preferredContactMethod">
+            <option value="">— Select —</option>
+            <option value="Phone">Phone</option>
+            <option value="Email">Email</option>
+            <option value="Text">Text</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Preferred Contact Time</label>
+          <input type="text" id="f-preferredContactTime" placeholder="e.g. weekday evenings" />
+        </div>
+        <div class="field">
+          <label>Language</label>
+          <input type="text" id="f-language" placeholder="e.g. English" />
+        </div>
+      </div>
+
+      <h3 class="form-section-title"><span class="icon-slot" data-icon="license"></span> Driver's License</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>License Number</label>
+          <input type="text" id="f-driversLicenseNumber" />
+        </div>
+        <div class="field">
+          <label>License Province</label>
+          <input type="text" id="f-licenseProvince" placeholder="e.g. ON" />
+        </div>
+        <div class="field">
+          <label>License Expiry</label>
+          <input type="date" id="f-licenseExpiry" />
+        </div>
+        <div class="field">
+          <label>License Class</label>
+          <input type="text" id="f-licenseClass" placeholder="e.g. G" />
+        </div>
+        <div class="field">
+          <label>Years Licensed</label>
+          <input type="number" id="f-yearsLicensed" min="0" />
+        </div>
+      </div>
+
+      <h3 class="form-section-title"><span class="icon-slot" data-icon="home"></span> Mailing Address</h3>
+      <div class="form-grid">
+        <div class="field field-wide">
+          <label>Street Address</label>
+          <input type="text" id="f-mailingAddress" />
+        </div>
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="f-mailingCity" />
+        </div>
+        <div class="field">
+          <label>Province</label>
+          <input type="text" id="f-mailingProvince" placeholder="e.g. ON" />
+        </div>
+        <div class="field">
+          <label>Postal Code</label>
+          <input type="text" id="f-mailingPostalCode" />
+        </div>
+      </div>
+
+      <h3 class="form-section-title"><span class="icon-slot" data-icon="home"></span> Property Address</h3>
+      <label class="checkbox-pill" id="f-property-same-wrap">
+        <input type="checkbox" id="f-propertyAddressSameAsMailing" checked />
+        <span>Same as mailing address</span>
+      </label>
+      <div class="form-grid hidden" id="f-property-address-grid" style="margin-top:12px;">
+        <div class="field field-wide">
+          <label>Street Address</label>
+          <input type="text" id="f-propertyAddress" />
+        </div>
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="f-propertyCity" />
+        </div>
+        <div class="field">
+          <label>Province</label>
+          <input type="text" id="f-propertyProvince" placeholder="e.g. ON" />
+        </div>
+        <div class="field">
+          <label>Postal Code</label>
+          <input type="text" id="f-propertyPostalCode" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:18px;">
         <label>Household Notes</label>
         <textarea id="f-notes" rows="3" placeholder="e.g. teen driver added 2027, considering umbrella policy"></textarea>
       </div>
+
+      <div id="f-household-members-section" class="hidden">
+        <h3 class="form-section-title"><span class="icon-slot" data-icon="clients"></span> Household Members</h3>
+        <div id="household-members-list" class="mini-list"></div>
+        <div class="mini-add-row">
+          <input type="text" id="hm-fullName" placeholder="Full name" />
+          <select id="hm-relationship">
+            <option value="Spouse">Spouse</option>
+            <option value="Child">Child</option>
+            <option value="Parent">Parent</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="date" id="hm-dateOfBirth" />
+          <button type="button" id="hm-add-btn" class="btn btn-ghost btn-sm"><span class="icon-slot" data-icon="plus"></span> Add</button>
+        </div>
+      </div>
+
       <div class="form-actions">
         <button type="submit" class="btn btn-primary"><span class="icon-slot" data-icon="save"></span> Save Client</button>
         <a href="#/clients" class="btn btn-ghost">Cancel</a>
@@ -289,12 +424,32 @@
       </div>
     </div>
 
+    <div class="tab-nav" id="client-tab-nav">
+      <button type="button" class="tab-btn active" data-tab="overview"><span class="icon-slot" data-icon="info-circle"></span> Overview</button>
+      <button type="button" class="tab-btn" data-tab="policies"><span class="icon-slot" data-icon="bound"></span> Policies</button>
+      <button type="button" class="tab-btn" data-tab="drivers"><span class="icon-slot" data-icon="license"></span> Drivers</button>
+      <button type="button" class="tab-btn" data-tab="documents"><span class="icon-slot" data-icon="attachment"></span> Documents</button>
+      <button type="button" class="tab-btn" data-tab="timeline"><span class="icon-slot" data-icon="renewal-due"></span> Timeline</button>
+    </div>
+
+    <div id="client-tab-panel"></div>
+  </template>
+
+  <template id="tpl-tab-overview">
     <div class="detail-grid">
       <section class="card">
         <h3><span class="icon-slot" data-icon="info-circle"></span> Client Info</h3>
         <dl class="info-list" id="detail-info"></dl>
       </section>
+      <section class="card">
+        <h3><span class="icon-slot" data-icon="clients"></span> Household Members</h3>
+        <div id="detail-household-members" class="mini-list"></div>
+      </section>
+    </div>
+  </template>
 
+  <template id="tpl-tab-timeline">
+    <div class="detail-grid">
       <section class="card">
         <h3><span class="icon-slot" data-icon="note"></span> Log an Interaction</h3>
         <form id="interaction-form" class="form-card">
@@ -309,6 +464,10 @@
                 <option value="Note">Note</option>
                 <option value="Bind">Bind</option>
                 <option value="DASH Report">DASH Report</option>
+                <option value="Renewal Review">Renewal Review</option>
+                <option value="Claim Filed">Claim Filed</option>
+                <option value="Endorsement Request">Endorsement Request</option>
+                <option value="Cancellation">Cancellation</option>
               </select>
             </div>
             <div class="field">
@@ -362,6 +521,13 @@
     </div>
 
     <section class="card">
+      <h3><span class="icon-slot" data-icon="renewal-due"></span> Timeline</h3>
+      <div id="detail-timeline" class="timeline"></div>
+    </section>
+  </template>
+
+  <template id="tpl-tab-documents">
+    <section class="card">
       <h3><span class="icon-slot" data-icon="attachment"></span> Documents</h3>
       <form id="document-form" class="doc-upload-row">
         <select id="doc-category"></select>
@@ -371,11 +537,146 @@
       <div id="doc-upload-status" class="upload-status"></div>
       <div id="documents-grid" class="documents-grid"></div>
     </section>
+  </template>
 
+  <template id="tpl-tab-policies">
     <section class="card">
-      <h3><span class="icon-slot" data-icon="renewal-due"></span> Timeline</h3>
-      <div id="detail-timeline" class="timeline"></div>
+      <h3><span class="icon-slot" data-icon="plus"></span> Add a Policy</h3>
+      <form id="policy-form" class="form-card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Type *</label>
+            <select id="p-type" required></select>
+          </div>
+          <div class="field">
+            <label>Carrier</label>
+            <input type="text" id="p-carrier" list="carrier-list" />
+          </div>
+          <div class="field">
+            <label>Policy Number</label>
+            <input type="text" id="p-policyNumber" />
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="p-status"></select>
+          </div>
+          <div class="field">
+            <label>Effective Date</label>
+            <input type="date" id="p-effectiveDate" />
+          </div>
+          <div class="field">
+            <label>Renewal Date</label>
+            <input type="date" id="p-renewalDate" />
+          </div>
+          <div class="field">
+            <label>Premium ($)</label>
+            <input type="text" inputmode="decimal" id="p-premium" data-format="currency" />
+          </div>
+          <div class="field">
+            <label>Payment Frequency</label>
+            <select id="p-paymentFrequency"></select>
+          </div>
+          <div class="field">
+            <label>Prior Carrier</label>
+            <input type="text" id="p-priorCarrier" />
+          </div>
+          <div class="field">
+            <label>Claims-Free Years</label>
+            <input type="number" id="p-claimsFreeYears" min="0" />
+          </div>
+          <div class="field">
+            <label>Liability Limit</label>
+            <input type="text" id="p-liabilityLimit" placeholder="e.g. $2,000,000" />
+          </div>
+        </div>
+
+        <div id="p-auto-deductibles" class="form-grid hidden">
+          <div class="field">
+            <label>Comprehensive Deductible ($)</label>
+            <input type="number" id="p-deductible-comprehensive" min="0" />
+          </div>
+          <div class="field">
+            <label>Collision Deductible ($)</label>
+            <input type="number" id="p-deductible-collision" min="0" />
+          </div>
+        </div>
+        <div id="p-home-deductibles" class="form-grid hidden">
+          <div class="field">
+            <label>Overall Deductible ($)</label>
+            <input type="number" id="p-deductible-overall" min="0" />
+          </div>
+          <div class="field">
+            <label>Water Damage Deductible ($)</label>
+            <input type="number" id="p-deductible-water" min="0" />
+          </div>
+        </div>
+
+        <div class="field field-wide">
+          <label>Endorsements</label>
+          <div class="checkbox-group" id="p-endorsements-group"></div>
+        </div>
+        <div class="field field-wide">
+          <label>Additional Insureds (one per line)</label>
+          <textarea id="p-additionalInsureds" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="p-notes" rows="2"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary"><span class="icon-slot" data-icon="save"></span> Save Policy</button>
+        </div>
+      </form>
     </section>
+
+    <div id="policies-list"></div>
+  </template>
+
+  <template id="tpl-tab-drivers">
+    <section class="card">
+      <h3><span class="icon-slot" data-icon="plus"></span> Add a Driver</h3>
+      <form id="driver-form" class="form-card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Full Name *</label>
+            <input type="text" id="d-fullName" required />
+          </div>
+          <div class="field">
+            <label>Relationship</label>
+            <select id="d-relationship"></select>
+          </div>
+          <div class="field">
+            <label>Date of Birth</label>
+            <input type="date" id="d-dateOfBirth" />
+          </div>
+          <div class="field">
+            <label>License Number</label>
+            <input type="text" id="d-licenseNumber" />
+          </div>
+          <div class="field">
+            <label>License Province</label>
+            <input type="text" id="d-licenseProvince" placeholder="e.g. ON" />
+          </div>
+          <div class="field">
+            <label>License Expiry</label>
+            <input type="date" id="d-licenseExpiry" />
+          </div>
+          <div class="field">
+            <label>License Class</label>
+            <input type="text" id="d-licenseClass" placeholder="e.g. G" />
+          </div>
+          <div class="field">
+            <label>Years Licensed</label>
+            <input type="number" id="d-yearsLicensed" min="0" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary"><span class="icon-slot" data-icon="save"></span> Save Driver</button>
+        </div>
+      </form>
+    </section>
+
+    <div id="drivers-list"></div>
   </template>
 
   <template id="tpl-tasks">

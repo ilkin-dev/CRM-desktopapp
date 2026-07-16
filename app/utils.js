@@ -138,12 +138,13 @@ export function applyFieldFormatters(container) {
   container.querySelectorAll('[data-format="currency"]').forEach(attachCurrencyFormatter);
 }
 
-// Builds the Line-of-Business checkbox group into `container`, pre-checking
-// values found in `selected` (array of strings).
-export function buildLobCheckboxes(container, selected) {
+// Builds a generic checkbox-pill group into `container`, pre-checking values
+// found in `selected` (array of strings). `labelHtml(opt)` returns the
+// markup shown next to each checkbox (icon + text, or plain text).
+export function buildCheckboxPills(container, options, selected, labelHtml) {
   container.innerHTML = "";
   const selectedSet = new Set(selected || []);
-  LOB_OPTIONS.forEach((opt) => {
+  options.forEach((opt) => {
     const label = document.createElement("label");
     label.className = "checkbox-pill";
     const cb = document.createElement("input");
@@ -154,12 +155,21 @@ export function buildLobCheckboxes(container, selected) {
     cb.addEventListener("change", () => label.classList.toggle("checked", cb.checked));
     label.appendChild(cb);
     const textSpan = document.createElement("span");
-    textSpan.innerHTML = ` ${lobIcon(opt)} ${escapeHtml(opt)}`;
+    textSpan.innerHTML = ` ${labelHtml ? labelHtml(opt) : escapeHtml(opt)}`;
     label.appendChild(textSpan);
     container.appendChild(label);
   });
 }
 
-export function getLobCheckboxValues(container) {
+export function getCheckedCheckboxValues(container) {
   return Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map((cb) => cb.value);
+}
+
+// Builds the Line-of-Business checkbox group specifically (icon + label).
+export function buildLobCheckboxes(container, selected) {
+  buildCheckboxPills(container, LOB_OPTIONS, selected, (opt) => `${lobIcon(opt)} ${escapeHtml(opt)}`);
+}
+
+export function getLobCheckboxValues(container) {
+  return getCheckedCheckboxValues(container);
 }

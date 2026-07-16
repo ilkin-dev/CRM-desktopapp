@@ -81,6 +81,10 @@ const TYPE_TO_ICON = {
   Note: "note",
   Bind: "bound",
   "DASH Report": "license",
+  "Renewal Review": "renewal-due",
+  "Claim Filed": "attachment",
+  "Endorsement Request": "edit",
+  Cancellation: "close",
 };
 
 export function icon(name, opts) {
